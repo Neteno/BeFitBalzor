@@ -1,0 +1,64 @@
+﻿@page "/exerciseentries/create"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>ExerciseEntry</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="ExerciseEntry" OnValidSubmit="AddExerciseEntry" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="trainingsessionid" class="form-label">TrainingSessionId:</label> 
+                <InputNumber id="trainingsessionid" @bind-Value="ExerciseEntry.TrainingSessionId" class="form-control" /> 
+                <ValidationMessage For="() => ExerciseEntry.TrainingSessionId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="exercisetypeid" class="form-label">ExerciseTypeId:</label> 
+                <InputNumber id="exercisetypeid" @bind-Value="ExerciseEntry.ExerciseTypeId" class="form-control" /> 
+                <ValidationMessage For="() => ExerciseEntry.ExerciseTypeId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="weight" class="form-label">Weight:</label> 
+                <InputNumber id="weight" @bind-Value="ExerciseEntry.Weight" class="form-control" /> 
+                <ValidationMessage For="() => ExerciseEntry.Weight" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="sets" class="form-label">Sets:</label> 
+                <InputNumber id="sets" @bind-Value="ExerciseEntry.Sets" class="form-control" /> 
+                <ValidationMessage For="() => ExerciseEntry.Sets" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="reps" class="form-label">Reps:</label> 
+                <InputNumber id="reps" @bind-Value="ExerciseEntry.Reps" class="form-control" /> 
+                <ValidationMessage For="() => ExerciseEntry.Reps" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/exerciseentries">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private ExerciseEntry ExerciseEntry { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddExerciseEntry()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.ExerciseEntry.Add(ExerciseEntry);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/exerciseentries");
+    }
+}

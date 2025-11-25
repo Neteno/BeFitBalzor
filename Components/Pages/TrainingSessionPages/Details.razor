@@ -1,0 +1,48 @@
+﻿@page "/trainingsessions/details"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>TrainingSession</h2>
+    <hr />
+    @if (trainingsession is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Start</dt>
+            <dd class="col-sm-10">@trainingsession.Start</dd>
+            <dt class="col-sm-2">End</dt>
+            <dd class="col-sm-10">@trainingsession.End</dd>
+        </dl>
+        <div>
+            <a href="@($"/trainingsessions/edit?id={trainingsession.Id}")">Edit</a> |
+            <a href="@($"/trainingsessions")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private TrainingSession? trainingsession;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        trainingsession = await context.TrainingSession.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (trainingsession is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

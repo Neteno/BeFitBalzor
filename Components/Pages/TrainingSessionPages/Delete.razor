@@ -1,0 +1,59 @@
+﻿@page "/trainingsessions/delete"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>TrainingSession</h2>
+    <hr />
+    @if (trainingsession is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Start</dt>
+            <dd class="col-sm-10">@trainingsession.Start</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">End</dt>
+            <dd class="col-sm-10">@trainingsession.End</dd>
+        </dl>
+        <EditForm method="post" Model="trainingsession" OnValidSubmit="DeleteTrainingSession" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(trainingsession is null)">Delete</button> |
+            <a href="/trainingsessions">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private TrainingSession? trainingsession;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        trainingsession = await context.TrainingSession.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (trainingsession is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteTrainingSession()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.TrainingSession.Remove(trainingsession!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/trainingsessions");
+    }
+}

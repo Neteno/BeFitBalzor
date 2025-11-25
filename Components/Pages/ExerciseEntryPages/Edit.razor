@@ -1,0 +1,109 @@
+﻿@page "/exerciseentries/edit"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>ExerciseEntry</h2>
+<hr />
+@if (ExerciseEntry is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="ExerciseEntry" OnValidSubmit="UpdateExerciseEntry" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="ExerciseEntry.Id" value="@ExerciseEntry.Id" />
+                <div class="mb-3">
+                    <label for="trainingsessionid" class="form-label">TrainingSessionId:</label>
+                    <InputNumber id="trainingsessionid" @bind-Value="ExerciseEntry.TrainingSessionId" class="form-control" />
+                    <ValidationMessage For="() => ExerciseEntry.TrainingSessionId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="exercisetypeid" class="form-label">ExerciseTypeId:</label>
+                    <InputNumber id="exercisetypeid" @bind-Value="ExerciseEntry.ExerciseTypeId" class="form-control" />
+                    <ValidationMessage For="() => ExerciseEntry.ExerciseTypeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="weight" class="form-label">Weight:</label>
+                    <InputNumber id="weight" @bind-Value="ExerciseEntry.Weight" class="form-control" />
+                    <ValidationMessage For="() => ExerciseEntry.Weight" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="sets" class="form-label">Sets:</label>
+                    <InputNumber id="sets" @bind-Value="ExerciseEntry.Sets" class="form-control" />
+                    <ValidationMessage For="() => ExerciseEntry.Sets" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="reps" class="form-label">Reps:</label>
+                    <InputNumber id="reps" @bind-Value="ExerciseEntry.Reps" class="form-control" />
+                    <ValidationMessage For="() => ExerciseEntry.Reps" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/exerciseentries">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private ExerciseEntry? ExerciseEntry { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        ExerciseEntry ??= await context.ExerciseEntry.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (ExerciseEntry is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateExerciseEntry()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(ExerciseEntry!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ExerciseEntryExists(ExerciseEntry!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/exerciseentries");
+    }
+
+    private bool ExerciseEntryExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.ExerciseEntry.Any(e => e.Id == id);
+    }
+}

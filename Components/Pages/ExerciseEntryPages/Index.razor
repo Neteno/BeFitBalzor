@@ -1,0 +1,40 @@
+﻿@page "/exerciseentries"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BeFitBlazor.Models
+@using BeFitBlazor.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="exerciseentries/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.ExerciseEntry">
+    <PropertyColumn Property="exerciseentry => exerciseentry.TrainingSessionId" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.ExerciseTypeId" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.Weight" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.Sets" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.Reps" />
+
+    <TemplateColumn Context="exerciseentry">
+        <a href="@($"exerciseentries/edit?id={exerciseentry.Id}")">Edit</a> |
+        <a href="@($"exerciseentries/details?id={exerciseentry.Id}")">Details</a> |
+        <a href="@($"exerciseentries/delete?id={exerciseentry.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

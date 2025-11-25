@@ -1,0 +1,49 @@
+﻿@page "/trainingsessions/create"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>TrainingSession</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="TrainingSession" OnValidSubmit="AddTrainingSession" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="start" class="form-label">Start:</label> 
+                <InputDate id="start" @bind-Value="TrainingSession.Start" class="form-control" /> 
+                <ValidationMessage For="() => TrainingSession.Start" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="end" class="form-label">End:</label> 
+                <InputDate id="end" @bind-Value="TrainingSession.End" class="form-control" /> 
+                <ValidationMessage For="() => TrainingSession.End" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/trainingsessions">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private TrainingSession TrainingSession { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddTrainingSession()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.TrainingSession.Add(TrainingSession);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/trainingsessions");
+    }
+}

@@ -1,0 +1,54 @@
+﻿@page "/exerciseentries/details"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>ExerciseEntry</h2>
+    <hr />
+    @if (exerciseentry is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">TrainingSessionId</dt>
+            <dd class="col-sm-10">@exerciseentry.TrainingSessionId</dd>
+            <dt class="col-sm-2">ExerciseTypeId</dt>
+            <dd class="col-sm-10">@exerciseentry.ExerciseTypeId</dd>
+            <dt class="col-sm-2">Weight</dt>
+            <dd class="col-sm-10">@exerciseentry.Weight</dd>
+            <dt class="col-sm-2">Sets</dt>
+            <dd class="col-sm-10">@exerciseentry.Sets</dd>
+            <dt class="col-sm-2">Reps</dt>
+            <dd class="col-sm-10">@exerciseentry.Reps</dd>
+        </dl>
+        <div>
+            <a href="@($"/exerciseentries/edit?id={exerciseentry.Id}")">Edit</a> |
+            <a href="@($"/exerciseentries")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private ExerciseEntry? exerciseentry;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        exerciseentry = await context.ExerciseEntry.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (exerciseentry is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

@@ -1,0 +1,71 @@
+﻿@page "/exerciseentries/delete"
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Models
+@inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>ExerciseEntry</h2>
+    <hr />
+    @if (exerciseentry is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">TrainingSessionId</dt>
+            <dd class="col-sm-10">@exerciseentry.TrainingSessionId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ExerciseTypeId</dt>
+            <dd class="col-sm-10">@exerciseentry.ExerciseTypeId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Weight</dt>
+            <dd class="col-sm-10">@exerciseentry.Weight</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Sets</dt>
+            <dd class="col-sm-10">@exerciseentry.Sets</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Reps</dt>
+            <dd class="col-sm-10">@exerciseentry.Reps</dd>
+        </dl>
+        <EditForm method="post" Model="exerciseentry" OnValidSubmit="DeleteExerciseEntry" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(exerciseentry is null)">Delete</button> |
+            <a href="/exerciseentries">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private ExerciseEntry? exerciseentry;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        exerciseentry = await context.ExerciseEntry.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (exerciseentry is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteExerciseEntry()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.ExerciseEntry.Remove(exerciseentry!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/exerciseentries");
+    }
+}
