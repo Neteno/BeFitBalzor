@@ -14,9 +14,9 @@
     <a href="exerciseentries/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.ExerciseEntry">
-    <PropertyColumn Property="exerciseentry => exerciseentry.TrainingSessionId" />
-    <PropertyColumn Property="exerciseentry => exerciseentry.ExerciseTypeId" />
+<QuickGrid Class="table" Items="exerciseEntries">
+    <PropertyColumn Property="exerciseentry => exerciseentry.TrainingSession.Start" Title="Data" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.ExerciseType.Name" Title="Typ ćwiczenia"/>
     <PropertyColumn Property="exerciseentry => exerciseentry.Weight" />
     <PropertyColumn Property="exerciseentry => exerciseentry.Sets" />
     <PropertyColumn Property="exerciseentry => exerciseentry.Reps" />
@@ -30,10 +30,13 @@
 
 @code {
     private ApplicationDbContext context = default!;
+    private IQueryable<ExerciseEntry> exerciseEntries = default!;
+
 
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+        exerciseEntries = context.ExerciseEntry.Include(e => e.TrainingSession).Include(e => e.ExerciseType);
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

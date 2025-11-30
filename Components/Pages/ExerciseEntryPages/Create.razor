@@ -1,6 +1,7 @@
 ﻿@page "/exerciseentries/create"
 @using Microsoft.EntityFrameworkCore
 @using BeFitBlazor.Models
+@using BeFitBlazor.Data
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
@@ -14,15 +15,27 @@
     <div class="col-md-4">
         <EditForm method="post" Model="ExerciseEntry" OnValidSubmit="AddExerciseEntry" FormName="create" Enhance>
             <DataAnnotationsValidator />
+
             <ValidationSummary class="text-danger" role="alert"/>
             <div class="mb-3">
                 <label for="trainingsessionid" class="form-label">TrainingSessionId:</label> 
-                <InputNumber id="trainingsessionid" @bind-Value="ExerciseEntry.TrainingSessionId" class="form-control" /> 
+                <InputSelect id="trainingsessionid" @bind-Value="ExerciseEntry.TrainingSessionId" class="input">
+                    @foreach (TrainingSession trainingSession in TrainingSessions)
+                    {
+                        <option value="@trainingSession.Id" selected=@(ExerciseEntry.TrainingSessionId == trainingSession.Id)>@trainingSession.Start</option>
+                    }
+                </InputSelect>
                 <ValidationMessage For="() => ExerciseEntry.TrainingSessionId" class="text-danger" /> 
             </div>        
+
             <div class="mb-3">
-                <label for="exercisetypeid" class="form-label">ExerciseTypeId:</label> 
-                <InputNumber id="exercisetypeid" @bind-Value="ExerciseEntry.ExerciseTypeId" class="form-control" /> 
+                <label for="exercisetypeid" class="form-label">ExerciseTypeId:</label>
+                <InputSelect id="exercisetypeid" @bind-Value="ExerciseEntry.ExerciseTypeId" class="input">
+                    @foreach (ExerciseType exerciseType in ExerciseTypes)
+                    {
+                        <option value="@exerciseType.Id" selected=@(ExerciseEntry.TrainingSessionId == exerciseType.Id)>@exerciseType.Name</option>
+                    }
+                </InputSelect>
                 <ValidationMessage For="() => ExerciseEntry.ExerciseTypeId" class="text-danger" /> 
             </div>        
             <div class="mb-3">
@@ -50,8 +63,19 @@
 </div>
 
 @code {
+    private ApplicationDbContext context = default!;
     [SupplyParameterFromForm]
     private ExerciseEntry ExerciseEntry { get; set; } = new();
+    private List<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
+    private List<ExerciseType> ExerciseTypes { get; set; } = new List<ExerciseType>();
+
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+        TrainingSessions = context.TrainingSession.ToList();
+        ExerciseTypes = context.ExerciseType.ToList();
+    }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddExerciseEntry()
