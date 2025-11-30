@@ -1,8 +1,12 @@
 ﻿@page "/exerciseentries/edit"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using BeFitBlazor.Models
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@attribute [Authorize]
 
 <PageTitle>Edit</PageTitle>
 
@@ -63,11 +67,24 @@ else
 
     [SupplyParameterFromForm]
     private ExerciseEntry? ExerciseEntry { get; set; }
+    private List<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
+    private List<ExerciseType> ExerciseTypes { get; set; } = new List<ExerciseType>();
+
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        ExerciseEntry ??= await context.ExerciseEntry.FirstOrDefaultAsync(m => m.Id == Id);
+        var UserId = await getUserId();
+        ExerciseEntry ??= await context.ExerciseEntry.Where(e => e.CreatedById == UserId).FirstOrDefaultAsync(m => m.Id == Id);
+        TrainingSessions = context.TrainingSession.ToList();
+        ExerciseTypes = context.ExerciseType.ToList();
+
 
         if (ExerciseEntry is null)
         {
@@ -80,6 +97,7 @@ else
     private async Task UpdateExerciseEntry()
     {
         using var context = DbFactory.CreateDbContext();
+        ExerciseEntry.CreatedById = await getUserId();
         context.Attach(ExerciseEntry!).State = EntityState.Modified;
 
         try

@@ -1,10 +1,15 @@
 ﻿@page "/exerciseentries"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BeFitBlazor.Models
 @using BeFitBlazor.Data
+@using BeFitBlazor.DTOs
 @implements IAsyncDisposable
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@attribute [Authorize]
 
 <PageTitle>Index</PageTitle>
 
@@ -15,8 +20,8 @@
 </p>
 
 <QuickGrid Class="table" Items="exerciseEntries">
-    <PropertyColumn Property="exerciseentry => exerciseentry.TrainingSession.Start" Title="Data" />
-    <PropertyColumn Property="exerciseentry => exerciseentry.ExerciseType.Name" Title="Typ ćwiczenia"/>
+    <PropertyColumn Property="exerciseentry => exerciseentry.TrainingSessionId" Title="Data" />
+    <PropertyColumn Property="exerciseentry => exerciseentry.ExerciseTypeId" Title="Typ ćwiczenia"/>
     <PropertyColumn Property="exerciseentry => exerciseentry.Weight" />
     <PropertyColumn Property="exerciseentry => exerciseentry.Sets" />
     <PropertyColumn Property="exerciseentry => exerciseentry.Reps" />
@@ -30,13 +35,20 @@
 
 @code {
     private ApplicationDbContext context = default!;
-    private IQueryable<ExerciseEntry> exerciseEntries = default!;
+    private IQueryable<ExerciseEntryDTO> exerciseEntries = default!;
 
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
-        exerciseEntries = context.ExerciseEntry.Include(e => e.TrainingSession).Include(e => e.ExerciseType);
+        var UserId = await getUserId();
+        exerciseEntries = context.ExerciseEntry.Where(e => e.CreatedById == UserId).Include(e => e.TrainingSession).Include(e => e.ExerciseType).Select(e => new ExerciseEntryDTO(e));
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

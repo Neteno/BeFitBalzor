@@ -1,8 +1,13 @@
 ﻿@page "/trainingsessions/delete"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using BeFitBlazor.Models
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@attribute [Authorize]
+
 
 <PageTitle>Delete</PageTitle>
 
@@ -38,10 +43,20 @@
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
+
+
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        trainingsession = await context.TrainingSession.FirstOrDefaultAsync(m => m.Id == Id);
+        var UserId = await getUserId();
+        trainingsession = await context.TrainingSession.Where(e => e.CreatedById == UserId).Include(e => e.ExerciseEntries).FirstOrDefaultAsync(m => m.Id == Id);
+
 
         if (trainingsession is null)
         {

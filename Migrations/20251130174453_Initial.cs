@@ -64,20 +64,6 @@ namespace BeFitBlazor.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TrainingSession",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Start = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    End = table.Column<DateOnly>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TrainingSession", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -184,6 +170,27 @@ namespace BeFitBlazor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TrainingSession",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Start = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    End = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    CreatedById = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingSession", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrainingSession_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ExerciseEntry",
                 columns: table => new
                 {
@@ -191,13 +198,20 @@ namespace BeFitBlazor.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     TrainingSessionId = table.Column<int>(type: "INTEGER", nullable: false),
                     ExerciseTypeId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Weight = table.Column<double>(type: "REAL", nullable: false),
+                    Weight = table.Column<int>(type: "INTEGER", nullable: false),
                     Sets = table.Column<int>(type: "INTEGER", nullable: false),
-                    Reps = table.Column<int>(type: "INTEGER", nullable: false)
+                    Reps = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedById = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ExerciseEntry", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExerciseEntry_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ExerciseEntry_ExerciseType_ExerciseTypeId",
                         column: x => x.ExerciseTypeId,
@@ -250,6 +264,11 @@ namespace BeFitBlazor.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ExerciseEntry_CreatedById",
+                table: "ExerciseEntry",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ExerciseEntry_ExerciseTypeId",
                 table: "ExerciseEntry",
                 column: "ExerciseTypeId");
@@ -258,6 +277,11 @@ namespace BeFitBlazor.Migrations
                 name: "IX_ExerciseEntry_TrainingSessionId",
                 table: "ExerciseEntry",
                 column: "TrainingSessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainingSession_CreatedById",
+                table: "TrainingSession",
+                column: "CreatedById");
         }
 
         /// <inheritdoc />
@@ -285,13 +309,13 @@ namespace BeFitBlazor.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "ExerciseType");
 
             migrationBuilder.DropTable(
                 name: "TrainingSession");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

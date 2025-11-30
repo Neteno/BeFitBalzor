@@ -1,10 +1,15 @@
 ﻿@page "/trainingsessions"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BeFitBlazor.Models
 @using BeFitBlazor.Data
+@using BeFitBlazor.DTOs
 @implements IAsyncDisposable
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@attribute [Authorize]
 
 <PageTitle>Index</PageTitle>
 
@@ -27,10 +32,21 @@
 
 @code {
     private ApplicationDbContext context = default!;
+    private IQueryable<TrainingSessionDTO> TrainingSessions = default!;
 
-    protected override void OnInitialized()
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        var UserId = await getUserId();
+        TrainingSessions = context.TrainingSession.Where(e => e.CreatedById == UserId).Include(e => e.ExerciseEntries).Select(e => new TrainingSessionDTO(e));
+
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

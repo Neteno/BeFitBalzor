@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BeFitBlazor.Data;
+using System.ComponentModel.DataAnnotations;
 
 namespace BeFitBlazor.Models
 {
@@ -10,5 +11,8 @@ namespace BeFitBlazor.Models
         [Display(Name = "Data i godzina Zakończenia")]
         public DateOnly End { get; set; }
         public List<ExerciseEntry> ExerciseEntries { get; set; } = new();
+        public string CreatedById { get; set; } = string.Empty;
+        [Display(Name = "Stworzone przez")]
+        public virtual ApplicationUser? CreatedBy { get; set; }
     }
 }

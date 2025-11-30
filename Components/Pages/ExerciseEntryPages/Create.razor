@@ -1,9 +1,13 @@
 ﻿@page "/exerciseentries/create"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using BeFitBlazor.Models
 @using BeFitBlazor.Data
 @inject IDbContextFactory<BeFitBlazor.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@attribute [Authorize]
 
 <PageTitle>Create</PageTitle>
 
@@ -69,6 +73,12 @@
     private List<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
     private List<ExerciseType> ExerciseTypes { get; set; } = new List<ExerciseType>();
 
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
 
     protected override void OnInitialized()
     {
@@ -80,9 +90,11 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddExerciseEntry()
     {
-        using var context = DbFactory.CreateDbContext();
+        ExerciseEntry.CreatedById = await getUserId();
+        context = DbFactory.CreateDbContext();
         context.ExerciseEntry.Add(ExerciseEntry);
         await context.SaveChangesAsync();
+
         NavigationManager.NavigateTo("/exerciseentries");
     }
 }

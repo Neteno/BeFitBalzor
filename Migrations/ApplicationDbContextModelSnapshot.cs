@@ -87,6 +87,10 @@ namespace BeFitBlazor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ExerciseTypeId")
                         .HasColumnType("INTEGER");
 
@@ -99,10 +103,12 @@ namespace BeFitBlazor.Migrations
                     b.Property<int>("TrainingSessionId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Weight")
-                        .HasColumnType("REAL");
+                    b.Property<int>("Weight")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("ExerciseTypeId");
 
@@ -133,6 +139,10 @@ namespace BeFitBlazor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("End")
                         .HasColumnType("TEXT");
 
@@ -140,6 +150,8 @@ namespace BeFitBlazor.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.ToTable("TrainingSession");
                 });
@@ -274,6 +286,12 @@ namespace BeFitBlazor.Migrations
 
             modelBuilder.Entity("BeFitBlazor.Models.ExerciseEntry", b =>
                 {
+                    b.HasOne("BeFitBlazor.Data.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BeFitBlazor.Models.ExerciseType", "ExerciseType")
                         .WithMany()
                         .HasForeignKey("ExerciseTypeId")
@@ -286,9 +304,22 @@ namespace BeFitBlazor.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("ExerciseType");
 
                     b.Navigation("TrainingSession");
+                });
+
+            modelBuilder.Entity("BeFitBlazor.Models.TrainingSession", b =>
+                {
+                    b.HasOne("BeFitBlazor.Data.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
