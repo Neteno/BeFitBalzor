@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BeFitBalzorNET8.Models
+namespace BeFitBlazor.Models
 {
     public class ExerciseStats
     {

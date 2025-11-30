@@ -1,0 +1,80 @@
+﻿@page "/exercisestats"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using BeFitBlazor.Data
+@using BeFitBlazor.Models
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+<PageTitle>Statystyki ćwiczeń</PageTitle>
+
+<h1>Statystyki ćwiczeń</h1>
+
+@if (statsList == null)
+{
+    <p>Wczytywanie danych...</p>
+}
+else if (!statsList.Any())
+{
+    <p>Brak danych do wyświetlenia.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nazwa ćwiczenia</th>
+                <th>Liczba serii</th>
+                <th>Łącznie powtórzeń</th>
+                <th>Średnia waga</th>
+                <th>Maksymalna waga</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stat in statsList)
+            {
+                <tr>
+                    <td>@stat.ExerciseName</td>
+                    <td>@stat.Count</td>
+                    <td>@stat.TotalReps</td>
+                    <td>@stat.AvgWeight</td>
+                    <td>@stat.MaxWeight</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private ApplicationDbContext _context;
+    private List<ExerciseStats> statsList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _context = DbFactory.CreateDbContext();
+
+        var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+
+        statsList = await _context.ExerciseEntry
+            .Where(e => e.CreatedById == userId)
+            .Include(e => e.ExerciseType)
+            .GroupBy(e => e.ExerciseType.Name)
+            .Select(g => new ExerciseStats
+                {
+                    ExerciseName = g.Key,
+                    Count = g.Count(),
+                    TotalReps = g.Sum(x => x.Reps),
+                    AvgWeight = g.Average(x => (double)x.Weight),
+                    MaxWeight = g.Max(x => x.Weight)
+                })
+            .ToListAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_context != null)
+            await _context.DisposeAsync();
+    }
+}
