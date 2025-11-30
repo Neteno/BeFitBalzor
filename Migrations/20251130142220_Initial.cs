@@ -51,6 +51,33 @@ namespace BeFitBlazor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ExerciseType",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExerciseType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrainingSession",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Start = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    End = table.Column<DateOnly>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainingSession", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -156,6 +183,35 @@ namespace BeFitBlazor.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ExerciseEntry",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TrainingSessionId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ExerciseTypeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Weight = table.Column<double>(type: "REAL", nullable: false),
+                    Sets = table.Column<int>(type: "INTEGER", nullable: false),
+                    Reps = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExerciseEntry", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExerciseEntry_ExerciseType_ExerciseTypeId",
+                        column: x => x.ExerciseTypeId,
+                        principalTable: "ExerciseType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExerciseEntry_TrainingSession_TrainingSessionId",
+                        column: x => x.TrainingSessionId,
+                        principalTable: "TrainingSession",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -192,6 +248,16 @@ namespace BeFitBlazor.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExerciseEntry_ExerciseTypeId",
+                table: "ExerciseEntry",
+                column: "ExerciseTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExerciseEntry_TrainingSessionId",
+                table: "ExerciseEntry",
+                column: "TrainingSessionId");
         }
 
         /// <inheritdoc />
@@ -213,10 +279,19 @@ namespace BeFitBlazor.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ExerciseEntry");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "ExerciseType");
+
+            migrationBuilder.DropTable(
+                name: "TrainingSession");
         }
     }
 }
